@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scoring import score_item, summarize, wilson
+from scoring import newcombe_diff, score_item, summarize, wilson
 from textutil import token_f1
 
 _DATA = Path(__file__).resolve().parent / "data"
@@ -79,3 +79,22 @@ def test_wilson_matches_textbook_value():
 
 def test_f1_ignores_arabic_punctuation():
     assert token_f1("رفض الحوثيون، لاحقًا.", "رفض الحوثيون لاحقًا") == 1.0
+
+
+def test_newcombe_identical_real_counts_gives_interval_symmetric_about_zero():
+    # 66/80 = grounded-correct الفعلي لتشغيل qwen على 80 سؤالاً (results.md)
+    d, (lo, hi) = newcombe_diff(66, 80, 66, 80)
+    assert d == 0 and lo < 0 < hi and abs(lo + hi) < 1e-12
+
+
+def test_newcombe_is_antisymmetric_when_sides_swap():
+    # 66/80 grounded-correct مقابل 79/80 امتناع (كلاهما من نتائج qwen الفعلية)
+    d1, (lo1, hi1) = newcombe_diff(66, 80, 79, 80)
+    d2, (lo2, hi2) = newcombe_diff(79, 80, 66, 80)
+    assert abs(d1 + d2) < 1e-12 and abs(lo1 + hi2) < 1e-12 and abs(hi1 + lo2) < 1e-12
+
+
+def test_newcombe_clear_gap_excludes_zero_and_stays_inside_unit_range():
+    # 0.825 مقابل 0.9875 على 80 لكل منهما: فرق واضح؛ وWald كان سيعطي حداً > 1 قرب السقف
+    d, (lo, hi) = newcombe_diff(79, 80, 66, 80)
+    assert lo > 0 and -1 <= lo <= hi <= 1 and abs(d - (79 / 80 - 66 / 80)) < 1e-12

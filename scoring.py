@@ -18,6 +18,18 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return (max(0.0, centre - half), min(1.0, centre + half))
 
 
+def newcombe_diff(k1: int, n1: int, k2: int, n2: int, z: float = 1.96) -> tuple[float, tuple[float, float]]:
+    """فرق نسبتين مستقلتين p1 − p2 بفترة Newcombe المركّبة من فترتَي Wilson (طريقة 10 في ورقته).
+
+    نستعملها لأن المجموعتين أسئلة مختلفة (لا اقتران بين العناصر)، ولأن Wilson يبقى سليماً قرب 0 و1
+    حيث ينهار تقريب Wald، وهو حال الامتناع هنا (≈ 0.99)."""
+    p1, p2 = k1 / n1, k2 / n2
+    l1, u1 = wilson(k1, n1, z)
+    l2, u2 = wilson(k2, n2, z)
+    d = p1 - p2
+    return d, (d - math.sqrt((p1 - l1) ** 2 + (u2 - p2) ** 2), d + math.sqrt((u1 - p1) ** 2 + (p2 - l2) ** 2))
+
+
 def score_item(item: dict, parsed: dict | None) -> dict:
     """نتيجة عنصر واحد كقيم منطقية؛ ردّ بلا صيغة صحيحة = فشل في كل المقاييس."""
     abstained = parsed is not None and not parsed["answerable"]
