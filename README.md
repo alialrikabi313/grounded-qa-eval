@@ -28,7 +28,7 @@ The model must reply with JSON: `answerable`, a short `answer`, and one `evidenc
 |---|---|---|---|---|---|---|---|---|
 | qwen3.8:27b | **0.906** (0.86–0.94) | 0.825 (0.73–0.89) | 0.812 (0.71–0.88) | 9/80 | 0.988 (0.93–1.00) | 0/72 | 0 | 27.9 |
 
-**Failure anatomy of the 14 answerable misses:** 9 false abstentions (11%) and 5 evidence mismatches. The model is *conservative*: near-perfect on not answering when it shouldn't, at the price of refusing when it could answer. The single abstention failure was a census question answered from a *different town's* passage (cosine 0.48, among the hardest negatives).
+**Failure anatomy of the 14 answerable misses:** 9 false abstentions (11%) and 5 evidence mismatches. The model is *conservative*: near-perfect on not answering when it shouldn't, at the price of refusing when it could answer. The single abstention failure was a census question answered from a *different town's* passage (similarity 0.48, above the median negative similarity of 0.44).
 
 **Sensitivity check.** I first suspected the F1 ≥ 0.5 rule penalised quoting the right sentence at a different length, so I added a lenient metric (quote contains the middle window of the gold evidence) *after* seeing results. It scored slightly *lower* (0.812), so the conclusion does not depend on the matching rule. The strict rule stays the primary metric.
 
