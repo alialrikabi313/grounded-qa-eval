@@ -45,6 +45,8 @@ EVIDENCE_WINDOW_WORDS = 6
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/chat")
 # عدد طبقات الـGPU لـOllama: None = قرار Ollama التلقائي، 0 = معالج فقط (يترك الـGPU لغيره)
 OLLAMA_NUM_GPU = int(os.environ["GQA_NUM_GPU"]) if os.environ.get("GQA_NUM_GPU") else None
+# خيوط المعالج: تحديدها يخفّف مزاحمة قياسات أخرى على الجهاز نفسه؛ None = تلقائي
+OLLAMA_NUM_THREAD = int(os.environ["GQA_NUM_THREAD"]) if os.environ.get("GQA_NUM_THREAD") else None
 DEFAULT_MODEL = "qwen3.8:27b"
 REQUEST_TIMEOUT_SEC = 900
 # حدّ الإخراج: جواب وجملة دليل فقط؛ يمنع نموذجاً ثرثاراً من احتكار الوقت

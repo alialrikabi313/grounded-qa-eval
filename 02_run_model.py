@@ -18,6 +18,7 @@ from config import (
     ITEMS_JSONL,
     MAX_OUTPUT_TOKENS,
     OLLAMA_NUM_GPU,
+    OLLAMA_NUM_THREAD,
     OLLAMA_URL,
     REQUEST_TIMEOUT_SEC,
     RUNS_DIR,
@@ -55,6 +56,8 @@ def ask_ollama(model: str, passage: str, question: str) -> str:
     }
     if OLLAMA_NUM_GPU is not None:
         body["options"]["num_gpu"] = OLLAMA_NUM_GPU
+    if OLLAMA_NUM_THREAD is not None:
+        body["options"]["num_thread"] = OLLAMA_NUM_THREAD
     req = urllib.request.Request(
         OLLAMA_URL, json.dumps(body).encode(), {"Content-Type": "application/json"}
     )
