@@ -30,8 +30,8 @@ def main() -> None:
         sys.exit(f"لا توجد تشغيلات في {RUNS_DIR}")
 
     lines = [
-        "| Model | Items done | Balanced score (95% CI) | Grounded-correct on answerable | Abstains on unanswerable | Fabricated quotes | Format errors | Median s/item |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Model | Items done | Balanced score (95% CI) | Grounded-correct on answerable | …lenient evidence match | False abstentions | Abstains on unanswerable | Fabricated quotes | Format errors | Median s/item |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for path in runs:
         with path.open(encoding="utf-8") as f:
@@ -46,6 +46,7 @@ def main() -> None:
         fq, fa = r["fabricated_quotes"]
         lines.append(
             f"| {path.stem} | {len(subset)} | {fmt(r['balanced'])} | {fmt(r['grounded_correct'])} "
+            f"| {fmt(r['grounded_lenient'])} | {r['false_abstentions'][0]}/{r['false_abstentions'][1]} "
             f"| {fmt(r['abstention'])} | {fq}/{fa} | {r['format_errors']} | {r['median_seconds']} |"
         )
     RESULTS_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")

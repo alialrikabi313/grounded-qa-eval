@@ -5,7 +5,7 @@ import math
 import random
 
 from config import BOOTSTRAP_ROUNDS, QUOTE_F1_THRESHOLD, SEED
-from textutil import norm, token_f1
+from textutil import evidence_window, norm, token_f1
 
 
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -29,6 +29,9 @@ def score_item(item: dict, parsed: dict | None) -> dict:
     if item["answerable"]:
         hit = answered and quote_valid and token_f1(quote, item["gold_quote"]) >= QUOTE_F1_THRESHOLD
         out["grounded_correct"] = hit
+        # تحليل حساسية معلَن (أُضيف بعد رؤية النتائج، فليس المقياس الرئيسي): اقتباس يحوي نافذة الدليل
+        # الوسطى يُقبل ولو اختلف طول الجملة؛ العتبة الصارمة F1 تظلم اقتباس نفس الجملة بطول آخر
+        out["grounded_correct_lenient"] = answered and quote_valid and evidence_window(item["gold_quote"]) in quote
     else:
         out["correct_abstention"] = abstained
     return out
@@ -40,6 +43,8 @@ def summarize(items: list[dict], rows: dict[str, dict]) -> dict:
     neg = [s for it, s in scored if not it["answerable"]]
     answered = [s for _, s in scored if s["answered"]]
     k_pos = sum(s["grounded_correct"] for s in pos)
+    k_len = sum(s["grounded_correct_lenient"] for s in pos)
+    false_abstain = sum(s["abstained"] for s in pos)
     k_neg = sum(s["correct_abstention"] for s in neg)
 
     # bootstrap للمتوسط المتوازن بإعادة سحب كل مجموعة على حدة
@@ -53,6 +58,8 @@ def summarize(items: list[dict], rows: dict[str, dict]) -> dict:
     return {
         "n_pos": len(pos), "n_neg": len(neg),
         "grounded_correct": (k_pos / len(pos), wilson(k_pos, len(pos))),
+        "grounded_lenient": (k_len / len(pos), wilson(k_len, len(pos))),
+        "false_abstentions": (false_abstain, len(pos)),
         "abstention": (k_neg / len(neg), wilson(k_neg, len(neg))),
         "balanced": ((k_pos / len(pos) + k_neg / len(neg)) / 2,
                      (boots[int(0.025 * len(boots))], boots[int(0.975 * len(boots))])),
